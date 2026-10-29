@@ -32,4 +32,38 @@ router.get("/:id", async(req,res)=>{
     }
   
 })
+router.post("/",async(req,res)=>{
+    const{title,description,location,starts_at,capacity} = req.body;
+    if (
+      typeof title !== "string" ||
+      !title.trim() ||
+      typeof location !== "string" ||
+      !location.trim() ||
+      typeof starts_at !== "string" ||
+      Number.isNaN(Date.parse(starts_at)) ||
+      (description !== undefined &&
+        description !== null &&
+        typeof description !== "string") ||
+      (capacity !== undefined &&
+        capacity !== null &&
+        (!Number.isInteger(capacity) || capacity <= 0))
+    ) {
+      return res.status(400).json({ error: "Invalid event data" });
+    }
+    try{
+        const result = await pool.query(
+            `INSERT INTO events(title,description,location,starts_at,capacity)
+            VALUES($1,$2,$3,$4,$5)
+            RETURNING *`,
+            [title,description??null,location,starts_at,capacity ?? null]
+        );
+        return res.status(201).json(result.rows[0])
+    }catch(error){
+        console.error("Failed to create event:",error);
+        return res.status(500).json({error: "Failed to create event"})
+    }
+    
+    
+
+})
 export default router
