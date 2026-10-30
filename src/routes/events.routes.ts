@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { pool } from "../db.js";
+import { authenticate } from "../middleware/authenticate.js";
+import { authorizeRoles } from "../middleware/authorizeRoles.js";
 const router = Router()
 
 router.get("/",async(_req,res) => {
@@ -32,7 +34,7 @@ router.get("/:id", async(req,res)=>{
     }
   
 })
-router.post("/",async(req,res)=>{
+router.post("/",authenticate,authorizeRoles("organizer","admin"),async(req,res)=>{
     if(typeof req.body !== "object" || 
         req.body === null || 
         Array.isArray(req.body)
