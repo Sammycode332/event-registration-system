@@ -7,7 +7,7 @@ router.get("/",async(_req,res) => {
         const result = await pool.query(
             "SELECT * FROM events ORDER BY starts_at ASC"
         );
-        res.json(result.rows)
+        res.status(200).json(result.rows)
 
     }catch(error){
         console.error("Failed to fetch events:",error)
@@ -25,14 +25,22 @@ router.get("/:id", async(req,res)=>{
     if(!event){
         return res.status(404).json({error:"Event not Found"})
     }
-    return res.json(event)
+    return res.status(200).json(event)
     }catch(error){
         console.error("Failed to get event",error)
-        return res.status(500).json({error:"Event does not exist"})
+        return res.status(500).json({error:"Failed to retrieve event"})
     }
   
 })
 router.post("/",async(req,res)=>{
+    if(typeof req.body !== "object" || 
+        req.body === null || 
+        Array.isArray(req.body)
+    ){
+        return res.status(400).json({
+            error:"Request body must be a valid object"
+        });
+    }
     const{title,description,location,starts_at,capacity} = req.body;
     if (
       typeof title !== "string" ||
@@ -40,7 +48,8 @@ router.post("/",async(req,res)=>{
       typeof location !== "string" ||
       !location.trim() ||
       typeof starts_at !== "string" ||
-      Number.isNaN(Date.parse(starts_at)) ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(starts_at) ||
+Number.isNaN(Date.parse(starts_at))||
       (description !== undefined &&
         description !== null &&
         typeof description !== "string") ||
@@ -50,12 +59,14 @@ router.post("/",async(req,res)=>{
     ) {
       return res.status(400).json({ error: "Invalid event data" });
     }
+    const cleanTitle = title.trim()
+    const cleanLocation = location.trim()
     try{
         const result = await pool.query(
             `INSERT INTO events(title,description,location,starts_at,capacity)
             VALUES($1,$2,$3,$4,$5)
             RETURNING *`,
-            [title,description??null,location,starts_at,capacity ?? null]
+            [cleanTitle,description??null,cleanLocation,starts_at,capacity ?? null]
         );
         return res.status(201).json(result.rows[0])
     }catch(error){
