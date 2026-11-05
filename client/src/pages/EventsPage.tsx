@@ -1,6 +1,6 @@
 import EventCard from '../components/EventCard'
 import { useState } from 'react'
-import { events } from '../data/events'
+import { events } from '../data/event'
 
 const EventsPage = () => {
     const [searchTerm, setSearchTerm] = useState('')
