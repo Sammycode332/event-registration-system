@@ -6,6 +6,8 @@ import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
 import AppLayout from "./components/AppLayout"
 import ProtectedRoute from "./components/ProtectedRoute";
+import DashboardRedirect from './pages/DashboardRedirect'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 function App() {
   return (
     <Routes>
@@ -19,6 +21,8 @@ function App() {
       <Route index element={<HomePage />} />
       <Route path="events" element={<EventsPage />} />
       <Route path="events/:eventId" element={<EventDetailsPage />} />
+      <Route path="dashboard" element={<DashboardRedirect />} />
+      <Route path="admin/dashboard" element={<AdminDashboardPage />} />
     </Route>
   </Route>
 </Routes>

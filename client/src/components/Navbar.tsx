@@ -45,21 +45,25 @@ const Navbar = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 font-bold text-[#10251C]">
-            {initials || "U"}
-          </div>
+       <Link
+  to="/dashboard"
+  aria-label="Open your dashboard"
+  className="flex items-center gap-3 rounded-lg transition hover:bg-[#222925] hover:px-2 hover:py-1"
+>
+  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 font-bold text-[#10251C]">
+    {initials || "U"}
+  </div>
 
-          <div>
-            <p className="text-sm font-semibold text-[#F5F0E6]">
-              {user?.name}
-            </p>
+  <div>
+    <p className="text-sm font-semibold text-[#F5F0E6]">
+      {user?.name}
+    </p>
 
-            <p className="text-xs text-emerald-400">
-              {user && roleLabels[user.role]}
-            </p>
-          </div>
-        </div>
+    <p className="text-xs text-emerald-400">
+      {user && roleLabels[user.role]}
+    </p>
+  </div>
+</Link>
 
         <button
           onClick={handleLogout}
