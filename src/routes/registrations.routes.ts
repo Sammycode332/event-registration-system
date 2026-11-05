@@ -2,11 +2,11 @@
 import { Router } from "express";
 import { pool}from "../db.js";
 import type { PoolClient } from "pg";
-
+import { authenticate } from "../middleware/authenticate.js";
 const router = Router();
 
 
-router.post("/", async (req, res) => {
+router.post("/", authenticate,async (req, res) => {
     if (
      typeof req.body !== "object" ||
      req.body === null ||
@@ -16,17 +16,13 @@ router.post("/", async (req, res) => {
        error: "Request body must be a valid object",
      });
     }
-  const { user_id, event_id } = req.body;
-  if (
-    !Number.isInteger(user_id) ||
-    user_id <= 0 ||
-    !Number.isInteger(event_id) ||
-    event_id <= 0
-  ) {
-    return res.status(400).json({
-      error: "Valid user_id and event_id are required",
-    });
-  }
+  const { event_id } = req.body;
+
+if (!Number.isInteger(event_id) || event_id <= 0) {
+  return res.status(400).json({
+    error: "A valid event_id is required",
+  });
+}
 
   let client: PoolClient | undefined;
 
@@ -69,7 +65,7 @@ router.post("/", async (req, res) => {
       `INSERT INTO registrations (user_id, event_id)
        VALUES ($1, $2)
        RETURNING *`,
-      [user_id, event_id]
+      [res.locals.user.id, event_id]
     );
 
     await client.query("COMMIT");
@@ -117,15 +113,7 @@ router.post("/", async (req, res) => {
 });
 
 
-router.get("/user/:userId", async (req, res) => {
-  const userId = Number(req.params.userId);
-
-  if (!Number.isInteger(userId) || userId <= 0) {
-    return res.status(400).json({
-      error: "Valid user ID is required",
-    });
-  }
-
+router.get("/me", authenticate, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT
@@ -139,7 +127,7 @@ router.get("/user/:userId", async (req, res) => {
        INNER JOIN events e ON r.event_id = e.id
        WHERE r.user_id = $1
        ORDER BY e.starts_at ASC`,
-      [userId]
+      [res.locals.user.id]
     );
 
     return res.status(200).json(result.rows);
@@ -151,36 +139,40 @@ router.get("/user/:userId", async (req, res) => {
     });
   }
 });
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticate, async (req, res) => {
   const registrationId = Number(req.params.id);
-  if(!Number.isInteger(registrationId) || registrationId <=0){
-    return res.status(400).json({
-        error:"Valid registration ID is required"
-    })
-  }
-  try{
-    const result = await pool.query(
-        `DELETE FROM registrations
-        WHERE id = $1
-        RETURNING *`,
-        [registrationId]
-    );
-    if(result.rowCount === 0){
-        return res.status(404).json({
-            error: "Registration not found"
-        });
 
-    }
-    return res.status(200).json({
-        message: "Registration cancelled successfully",
-        registration: result.rows[0]
+  if (!Number.isInteger(registrationId) || registrationId <= 0) {
+    return res.status(400).json({
+      error: "Valid registration ID is required",
     });
-  }catch(error){
-    console.error("Failed to cancel registration:",error)
+  }
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM registrations
+       WHERE id = $1 AND user_id = $2
+       RETURNING *`,
+      [registrationId, res.locals.user.id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        error: "Registration not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Registration cancelled successfully",
+      registration: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Failed to cancel registration:", error);
 
     return res.status(500).json({
-        error: "Failed to cancel registration"
-    })
+      error: "Failed to cancel registration",
+    });
   }
-})
+});
+
 export default router;
