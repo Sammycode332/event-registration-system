@@ -43,7 +43,7 @@ router.post("/",authenticate,authorizeRoles("organizer","admin"),async(req,res)=
             error:"Request body must be a valid object"
         });
     }
-    const{title,description,location,starts_at,capacity} = req.body;
+    const{title,description,location,starts_at,capacity,image_url,category} = req.body;
     if (
       typeof title !== "string" ||
       !title.trim() ||
@@ -57,7 +57,11 @@ Number.isNaN(Date.parse(starts_at))||
         typeof description !== "string") ||
       (capacity !== undefined &&
         capacity !== null &&
-        (!Number.isInteger(capacity) || capacity <= 0))
+        (!Number.isInteger(capacity) || capacity <= 0))||
+        (image_url !== undefined &&
+  image_url !== null &&
+  typeof image_url !== "string")||(category !== undefined &&
+    (typeof category !== "string" || !category.trim())) 
     ) {
       return res.status(400).json({ error: "Invalid event data" });
     }
@@ -66,10 +70,10 @@ Number.isNaN(Date.parse(starts_at))||
     const createdBy = res.locals.user.id;
     try{
         const result = await pool.query(
-            `INSERT INTO events(title,description,location,starts_at,capacity,created_by)
-            VALUES($1,$2,$3,$4,$5,$6)
+            `INSERT INTO events(title,description,location,starts_at,capacity,image_url,category,created_by)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8)
             RETURNING *`,
-            [cleanTitle,description??null,cleanLocation,starts_at,capacity ?? null,createdBy]
+            [cleanTitle,description??null,cleanLocation,starts_at,capacity ?? null,image_url?.trim() || null,category?.trim() || null,createdBy]
         );
         return res.status(201).json(result.rows[0])
     }catch(error){
@@ -140,7 +144,9 @@ router.patch(
                 "description",
                 "location",
                 "starts_at",
-                "capacity"
+                "capacity",
+                "image_url",
+                "category"
             ];
 
             const submittedFields = Object.keys(req.body);
@@ -160,7 +166,9 @@ router.patch(
                 description,
                 location,
                 starts_at,
-                capacity
+                capacity,
+                image_url,
+                category
             } = req.body;
 
             if (
@@ -184,6 +192,14 @@ router.patch(
                 (capacity !== undefined &&
                     capacity !== null &&
                     (!Number.isInteger(capacity) || capacity <= 0))
+
+           || (image_url !== undefined &&
+    image_url !== null &&
+    typeof image_url !== "string")
+    ||(category !== undefined &&
+    (typeof category !== "string" || !category.trim()))|| (category !== undefined &&
+    category !== null &&
+    (typeof category !== "string" || !category.trim()))
             ) {
                 return res.status(400).json({
                     error: "Invalid event data"
