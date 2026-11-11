@@ -2,24 +2,30 @@
   "name": "eventregistration",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
-  "main": "index.js",
+  "description": "Event Registration System Backend API",
+  "main": "src/server.ts",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx src/scripts/migrate.ts"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "event-registration",
+    "express",
+    "typescript",
+    "postgresql",
+    "supabase"
+  ],
+  "author": "Samuel Adeyemi Oroja",
   "license": "ISC",
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
-    "@tailwindcss/vite": "^4.3.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
-    "pg": "^8.23.1",
-    "tailwindcss": "^4.3.3"
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

@@ -11,7 +11,7 @@ router.get("/db",async(_req,res)=>{
         res.json({status:"ok",database:"connected"})
     }catch(error){
         console.error("Database connection failed: ",error)
-        res.json(500).json({status:"error",databse:"disconnected"})
+        res.status(500).json({ status: "error", database: "disconnected" });
     }
 })
 export default router;

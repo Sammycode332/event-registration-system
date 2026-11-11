@@ -10,6 +10,12 @@ interface AuthContextType {
   isLoading: boolean;
   login:(email: string,password:string)=>Promise<void>
   logout:()=>Promise<void>
+  register: (
+  name: string,
+  email: string,
+  password: string
+) => Promise<{ requiresEmailVerification: boolean }>;
+resendVerificationEmail: (email: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType |null>(null)
@@ -61,6 +67,50 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const profileData: { user: User } = await profileResponse.json();
 
   setUser(profileData.user);
+};
+const register = async (
+  name: string,
+  email: string,
+  password: string
+): Promise<{ requiresEmailVerification: boolean }> => {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/auth/register`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Registration failed");
+  }
+
+  return {
+    requiresEmailVerification: data.requiresEmailVerification,
+  };
+};
+const resendVerificationEmail = async (email: string): Promise<void> => {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/auth/resend-verification`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Unable to resend verification email");
+  }
 };
 const logout = async (): Promise<void> => {
   const accessToken = sessionStorage.getItem("access_token");
@@ -195,7 +245,9 @@ if (isMounted) {
         isAuthenticated,
         isLoading,
         login,
+        register,
         logout,
+        resendVerificationEmail,
       }}
     >
       {children}

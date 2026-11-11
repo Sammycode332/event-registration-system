@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation,useNavigate } from 'react-router-dom'
 import { useAuth } from "../contexts/AuthContext";
 const LoginPage = () => {
     const [email,setEmail] = useState("")
@@ -8,60 +8,146 @@ const LoginPage = () => {
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
-    const { login } = useAuth();
-    const navigate = useNavigate()
+    const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
+    const { login, register,resendVerificationEmail } = useAuth();
+const navigate = useNavigate();
+const location = useLocation();
+
+const isRegistering = location.pathname === '/register';
+const [name, setName] = useState('');
+const [confirmPassword, setConfirmPassword] = useState('');
 const [success, setSuccess] = useState('')
 const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
   event.preventDefault();
 
   setError('');
   setSuccess('');
+
+  if (isRegistering && password !== confirmPassword) {
+    setError('Passwords do not match.');
+    return;
+  }
+
   setIsLoading(true);
 
   try {
-    await login(email, password);
+    if (isRegistering) {
+      const result = await register(name, email, password);
 
-    setSuccess('Login successful!');
+      if (result.requiresEmailVerification) {
+        setPendingVerificationEmail(email)
+        setSuccess('Account created! Please check your email to verify your account before signing in.');
+      } else {
+        setSuccess('Account created successfully! You can now sign in.');
+        setEmail("")
+      }
 
-    setTimeout(() => {
-      navigate('/');
-    }, 1500);
+      setName('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+    } else {
+      await login(email, password);
 
+      setSuccess('Login successful!');
+
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
+    }
   } catch (error) {
     const message = error instanceof Error
       ? error.message
-      : 'Login failed. Please try again.';
+      : 'Something went wrong. Please try again.';
 
     setError(message);
-
-    if (message === 'Invalid email or password') {
-      setEmail('');
-      setPassword('');
-    }
-
   } finally {
     setIsLoading(false);
+  }
+};
+const handleResendVerification = async () => {
+  try {
+    setError("");
+    setSuccess("");
+
+    const emailToVerify = pendingVerificationEmail || email;
+await resendVerificationEmail(emailToVerify);
+
+    setSuccess("If verification is required, a new email has been sent.");
+  } catch (error) {
+    setError(
+      error instanceof Error
+        ? error.message
+        : "Unable to resend verification email"
+    );
   }
 };
   return (
     <section className="flex min-h-[80vh] items-center justify-center px-6 py-16">
       <div className="w-full max-w-md rounded-2xl border border-[#39443D] bg-[#222925] p-8">
 
+        <div className="mb-8 grid grid-cols-2 rounded-lg bg-[#171B19] p-1">
+  <button
+    type="button"
+    onClick={() => navigate('/login')}
+    className={`rounded-md py-3 text-sm font-semibold transition ${
+      !isRegistering
+        ? 'bg-emerald-500 text-[#10251C]'
+        : 'text-stone-400 hover:text-white'
+    }`}
+  >
+    Log In
+  </button>
+
+  <button
+    type="button"
+    onClick={() => navigate('/register')}
+    className={`rounded-md py-3 text-sm font-semibold transition ${
+      isRegistering
+        ? 'bg-emerald-500 text-[#10251C]'
+        : 'text-stone-400 hover:text-white'
+    }`}
+  >
+    Sign Up
+  </button>
+</div>
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
-            Welcome back
-          </p>
+  {isRegistering ? 'Join the community' : 'Welcome back'}
+</p>
 
-          <h1 className="mt-3 text-3xl font-bold text-[#F5F0E6]">
-            Sign in to your account
-          </h1>
+<h1 className="mt-3 text-3xl font-bold text-[#F5F0E6]">
+  {isRegistering ? 'Create your account' : 'Sign in to your account'}
+</h1>
 
-          <p className="mt-3 text-sm text-stone-400">
-            Continue discovering and registering for events.
-          </p>
+<p className="mt-3 text-sm text-stone-400">
+  {isRegistering
+    ? 'Create an account and start discovering experiences.'
+    : 'Continue discovering and registering for events.'}
+</p>
         </div>
 
        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        {isRegistering && (
+  <div>
+    <label
+      htmlFor="name"
+      className="mb-2 block text-sm font-medium text-stone-300"
+    >
+      Full name
+    </label>
+
+    <input
+      id="name"
+      type="text"
+      required
+      value={name}
+      onChange={(event) => setName(event.target.value)}
+      placeholder="Enter your full name"
+      className="w-full rounded-lg border border-[#39443D] bg-[#171B19] px-4 py-3 text-[#F5F0E6] outline-none focus:border-emerald-500"
+    />
+  </div>
+)}
   <div>
     <label
       htmlFor="email"
@@ -97,6 +183,7 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
       placeholder="Enter your password"
       className="w-full rounded-lg border border-[#39443D] bg-[#171B19] px-4 py-3 pr-12 text-[#F5F0E6] outline-none focus:border-emerald-500"
     />
+
 
     <button
       type="button"
@@ -140,6 +227,26 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     </button>
   </div>
 </div>
+{isRegistering && (
+  <div>
+    <label
+      htmlFor="confirmPassword"
+      className="mb-2 block text-sm font-medium text-stone-300"
+    >
+      Confirm password
+    </label>
+
+    <input
+      id="confirmPassword"
+      type={showPassword ? 'text' : 'password'}
+      required
+      value={confirmPassword}
+      onChange={(event) => setConfirmPassword(event.target.value)}
+      placeholder="Confirm your password"
+      className="w-full rounded-lg border border-[#39443D] bg-[#171B19] px-4 py-3 text-[#F5F0E6] outline-none focus:border-emerald-500"
+    />
+  </div>
+)}
        {error && (
           <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             {error}
@@ -150,13 +257,24 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
             {success}
           </p>
         )}
-                <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full rounded-lg bg-emerald-500 px-5 py-3 font-semibold text-[#10251C] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isLoading ? 'Signing in...' : 'Sign in'}
-        </button>
+        {email.trim() && (
+  <button
+    type="button"
+    onClick={handleResendVerification}
+    className="mt-3 text-sm font-medium text-[#C6A76B] hover:underline"
+  >
+    Resend verification email
+  </button>
+)}
+        <button
+  type="submit"
+  disabled={isLoading}
+  className="w-full rounded-lg bg-emerald-500 px-5 py-3 font-semibold text-[#10251C] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+>
+  {isLoading
+    ? isRegistering ? 'Creating account...' : 'Signing in...'
+    : isRegistering ? 'Create account' : 'Sign in'}
+</button>
       </form>
 
       </div>

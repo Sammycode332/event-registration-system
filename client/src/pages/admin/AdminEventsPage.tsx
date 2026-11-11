@@ -251,7 +251,7 @@ const filteredEvents = events.filter((event) => {
   );
 });
   return (
-    <main className="min-h-screen px-8 py-10">
+    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-10 sm:px-8">
       <div className="mb-10">
         <p className="text-sm font-medium text-emerald-400">
           PLATFORM MANAGEMENT
@@ -490,6 +490,7 @@ const filteredEvents = events.filter((event) => {
                 {event.capacity ?? "Unlimited"}
               </td>
               <td className="px-6 py-4">
+                <div className="flex gap-2">
   <button
     type="button"
     onClick={() => handleEditClick(event)}
@@ -504,6 +505,7 @@ const filteredEvents = events.filter((event) => {
 >
   Delete
 </button>
+                </div>
 </td>
             </tr>
           ))}

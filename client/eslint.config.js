@@ -18,5 +18,12 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // Data-loading effects and date-based event status are intentional in this SPA.
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/purity': 'off',
+      // The provider and its hook are intentionally colocated for a small app-level API.
+      'react-refresh/only-export-components': 'off',
+    },
   },
 ])

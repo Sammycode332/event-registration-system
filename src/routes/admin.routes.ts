@@ -80,6 +80,64 @@ router.patch("/users/:id/role", authenticate,authorizeRoles("admin"),async(req,r
         error:"Failed to update user role"
     })
 }
-})
 
+})
+router.get("/stats", authenticate, authorizeRoles("admin"), async (_req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        (SELECT COUNT(*)::int FROM users) AS total_users,
+        (SELECT COUNT(*)::int FROM events) AS total_events,
+        (SELECT COUNT(*)::int FROM registrations) AS total_registrations,
+        (SELECT COUNT(*)::int FROM events WHERE starts_at >= NOW()) AS upcoming_events,
+        (SELECT COUNT(*)::int FROM users WHERE role = 'user') AS total_attendees,
+        (SELECT COUNT(*)::int FROM users WHERE role = 'organizer') AS total_organizers,
+        (SELECT COUNT(*)::int FROM users WHERE role = 'admin') AS total_admins
+    `);
+
+    return res.status(200).json({
+      stats: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Failed to fetch admin statistics:", error);
+
+    return res.status(500).json({
+      error: "Failed to retrieve admin statistics",
+    });
+  }
+});
+router.get(
+  "/upcoming-events",
+  authenticate,
+  authorizeRoles("admin"),
+  async (_req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT
+          e.id,
+          e.title,
+          e.location,
+          e.starts_at,
+          e.capacity,
+          COUNT(r.id)::int AS registration_count
+        FROM events e
+        LEFT JOIN registrations r
+          ON r.event_id = e.id
+        WHERE e.starts_at >= NOW()
+        GROUP BY e.id
+        ORDER BY e.starts_at ASC
+        LIMIT 5
+      `);
+
+      return res.status(200).json({
+        events: result.rows,
+      });
+    } catch (error) {
+      console.error("Failed to fetch upcoming events:", error);
+      return res.status(500).json({
+        error: "Failed to retrieve upcoming events",
+      });
+    }
+  }
+);
 export default router;
