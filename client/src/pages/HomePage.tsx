@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import EventCard from '../components/EventCard';
-
+import { API_BASE_URL } from "../config/api";
 interface Event {
   id: number;
   title: string;
@@ -22,11 +22,20 @@ const HomePage = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/events`);
+       const response = await fetch(`${API_BASE_URL}/events`);
         if (!response.ok) {
-          throw new Error('Unable to retrieve events.');
-        }
-        const data: Event[] = await response.json();
+  throw new Error(`API request failed: ${response.status}`);
+}
+
+const contentType = response.headers.get("content-type");
+
+if (!contentType?.includes("application/json")) {
+  throw new Error(
+    `Expected JSON but received ${contentType || "unknown content type"}`
+  );
+}
+
+const data: Event[] = await response.json();
         setEvents(data);
       } catch (err) {
         console.error('Failed to fetch homepage events:', err);
@@ -39,6 +48,8 @@ const HomePage = () => {
     };
     fetchEvents();
   }, []);
+  console.log("API URL:", import.meta.env.VITE_API_URL);
+console.log("Environment:", import.meta.env.MODE);
 
   // Pick first event or fallback for featured spotlight
   const featuredEvent = events.length > 0 ? events[0] : null;
