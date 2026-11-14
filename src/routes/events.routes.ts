@@ -5,6 +5,21 @@ import { authorizeRoles } from "../middleware/authorizeRoles.js";
 
 const router = Router();
 
+/**
+ * Removes accidental backslashes from image URLs. A value such as
+ * `https\://images.example.com/event.jpg` cannot be loaded by a browser.
+ */
+const normalizeImageUrl = (imageUrl: string | null | undefined) =>
+    imageUrl?.trim().replaceAll("\\", "") || null;
+
+const normalizeEventImageUrl = <T extends { image_url?: unknown }>(event: T) => ({
+    ...event,
+    image_url:
+        typeof event.image_url === "string"
+            ? normalizeImageUrl(event.image_url)
+            : event.image_url ?? null,
+});
+
 // GET /events - list all events with attendee registration counts
 router.get("/", async (_req, res) => {
     try {
@@ -16,7 +31,7 @@ router.get("/", async (_req, res) => {
              GROUP BY e.id
              ORDER BY e.starts_at ASC`
         );
-        res.status(200).json(result.rows);
+        res.status(200).json(result.rows.map(normalizeEventImageUrl));
     } catch (error) {
         console.error("Failed to fetch events:", error);
         res.status(500).json({ error: "Failed to fetch events" });
@@ -46,7 +61,7 @@ router.get(
                        ORDER BY e.starts_at ASC`;
             const params = user.role === "admin" ? [] : [user.id];
             const result = await pool.query(query, params);
-            return res.status(200).json(result.rows);
+            return res.status(200).json(result.rows.map(normalizeEventImageUrl));
         } catch (error) {
             console.error("Failed to fetch organizer events:", error);
             return res.status(500).json({ error: "Failed to fetch organizer events" });
@@ -74,7 +89,7 @@ router.get("/:id", async (req, res) => {
         if (!event) {
             return res.status(404).json({ error: "Event not Found" });
         }
-        return res.status(200).json(event);
+        return res.status(200).json(normalizeEventImageUrl(event));
     } catch (error) {
         console.error("Failed to get event", error);
         return res.status(500).json({ error: "Failed to retrieve event" });
@@ -133,7 +148,7 @@ router.post(
                     cleanLocation,
                     starts_at,
                     capacity ?? null,
-                    image_url?.trim() || null,
+                    normalizeImageUrl(image_url),
                     category?.trim() || null,
                     createdBy
                 ]
@@ -265,6 +280,9 @@ router.patch(
                 if (typeof value === "string") {
                     value = value.trim();
                 }
+                if (field === "image_url") {
+                    value = normalizeImageUrl(value);
+                }
                 values.push(value);
             }
 
@@ -280,7 +298,7 @@ router.patch(
 
             return res.status(200).json({
                 message: "Event updated successfully",
-                event: result.rows[0]
+                event: normalizeEventImageUrl(result.rows[0])
             });
         } catch (error) {
             console.error("Failed to update event:", error);

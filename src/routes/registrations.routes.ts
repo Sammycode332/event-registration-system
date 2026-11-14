@@ -5,6 +5,14 @@ import { authenticate } from "../middleware/authenticate.js";
 
 const router = Router();
 
+const normalizeEventImageUrl = <T extends { image_url?: unknown }>(event: T) => ({
+    ...event,
+    image_url:
+        typeof event.image_url === "string"
+            ? event.image_url.trim().replaceAll("\\", "") || null
+            : event.image_url ?? null,
+});
+
 // POST /registrations - register current user for event
 router.post("/", authenticate, async (req, res) => {
     if (
@@ -146,7 +154,7 @@ router.get("/me", authenticate, async (_req, res) => {
             [res.locals.user.id]
         );
 
-        return res.status(200).json(result.rows);
+        return res.status(200).json(result.rows.map(normalizeEventImageUrl));
     } catch (error) {
         console.error("Failed to fetch user registrations:", error);
         return res.status(500).json({
