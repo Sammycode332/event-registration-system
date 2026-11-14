@@ -2,6 +2,7 @@ import { createContext,useState,useContext,useEffect} from "react";
 import type{ReactNode} from "react"
 
 import type { User } from "../types/auth";
+import { API_BASE_URL } from "../config/api";
 
 
 interface AuthContextType {
@@ -29,7 +30,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (email: string, password: string) => {
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/auth/login`,
+    `${API_BASE_URL}/auth/login`,
     {
       method: "POST",
       headers: {
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   sessionStorage.setItem("refresh_token", data.refresh_token);
 
   const profileResponse = await fetch(
-    `${import.meta.env.VITE_API_URL}/auth/me`,
+    `${API_BASE_URL}/auth/me`,
     {
       headers: {
         Authorization: `Bearer ${data.access_token}`,
@@ -74,7 +75,7 @@ const register = async (
   password: string
 ): Promise<{ requiresEmailVerification: boolean }> => {
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/auth/register`,
+    `${API_BASE_URL}/auth/register`,
     {
       method: "POST",
       headers: {
@@ -96,7 +97,7 @@ const register = async (
 };
 const resendVerificationEmail = async (email: string): Promise<void> => {
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/auth/resend-verification`,
+    `${API_BASE_URL}/auth/resend-verification`,
     {
       method: "POST",
       headers: {
@@ -118,7 +119,7 @@ const logout = async (): Promise<void> => {
   try {
     if (accessToken) {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/logout`,
+        `${API_BASE_URL}/auth/logout`,
         {
           method: "POST",
           headers: {
@@ -152,7 +153,7 @@ const logout = async (): Promise<void> => {
 
     try {
 let response = await fetch(
-  `${import.meta.env.VITE_API_URL}/auth/me`,
+  `${API_BASE_URL}/auth/me`,
   {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -170,7 +171,7 @@ if (response.status === 401) {
   }
 
   const refreshResponse = await fetch(
-    `${import.meta.env.VITE_API_URL}/auth/refresh`,
+    `${API_BASE_URL}/auth/refresh`,
     {
       method: "POST",
       headers: {
@@ -197,7 +198,7 @@ if (response.status === 401) {
   sessionStorage.setItem("refresh_token", tokens.refresh_token);
 
   response = await fetch(
-    `${import.meta.env.VITE_API_URL}/auth/me`,
+    `${API_BASE_URL}/auth/me`,
     {
       headers: {
         Authorization: `Bearer ${tokens.access_token}`,

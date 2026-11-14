@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Event placeholder">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#17201c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#background)"/>
+  <circle cx="600" cy="300" r="118" fill="#34d399" opacity=".18"/>
+  <path d="M530 235h140a18 18 0 0 1 18 18v112a18 18 0 0 1-18 18H530a18 18 0 0 1-18-18V253a18 18 0 0 1 18-18Zm0 42h158M554 210v48m92-48v48" fill="none" stroke="#a7f3d0" stroke-width="16" stroke-linecap="round"/>
+  <text x="600" y="490" text-anchor="middle" fill="#ecfdf5" font-family="Arial, sans-serif" font-size="42" font-weight="700">Eventify</text>
+  <text x="600" y="535" text-anchor="middle" fill="#a7f3d0" font-family="Arial, sans-serif" font-size="24">An experience worth showing up for</text>
+</svg>

@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import EventCard from '../components/EventCard';
 import { API_BASE_URL } from "../config/api";
+
+const FALLBACK_IMAGE = "/event-placeholder.svg";
 interface Event {
   id: number;
   title: string;
@@ -48,9 +50,6 @@ const data: Event[] = await response.json();
     };
     fetchEvents();
   }, []);
-  console.log("API URL:", import.meta.env.VITE_API_URL);
-console.log("Environment:", import.meta.env.MODE);
-
   // Pick first event or fallback for featured spotlight
   const featuredEvent = events.length > 0 ? events[0] : null;
 
@@ -117,10 +116,13 @@ console.log("Environment:", import.meta.env.MODE);
               <>
                 <img
                   src={
-                    featuredEvent.image_url ??
-                    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80"
+                    featuredEvent.image_url || FALLBACK_IMAGE
                   }
                   alt={featuredEvent.title}
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = FALLBACK_IMAGE;
+                  }}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
 
@@ -217,8 +219,7 @@ console.log("Environment:", import.meta.env.MODE);
                   category={event.category ?? "General"}
                   eventId={String(event.id)}
                   image={
-                    event.image_url ??
-                    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80"
+                    event.image_url || FALLBACK_IMAGE
                   }
                   capacity={event.capacity}
                   registrationCount={Number(event.registration_count) || 0}

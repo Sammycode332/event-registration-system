@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { API_BASE_URL } from "../../config/api";
 
 interface OrganizerEvent {
   id: number;
@@ -67,7 +68,7 @@ const OrganizerDashboardPage = () => {
       setIsLoading(true);
       setError("");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/events/organizer/my-events`,
+        `${API_BASE_URL}/events/organizer/my-events`,
         { headers: getAuthHeaders() }
       );
 
@@ -139,8 +140,8 @@ const OrganizerDashboardPage = () => {
 
       const url =
         editingEventId !== null
-          ? `${import.meta.env.VITE_API_URL}/events/${editingEventId}`
-          : `${import.meta.env.VITE_API_URL}/events`;
+          ? `${API_BASE_URL}/events/${editingEventId}`
+          : `${API_BASE_URL}/events`;
 
       const method = editingEventId !== null ? "PATCH" : "POST";
 
@@ -172,7 +173,7 @@ const OrganizerDashboardPage = () => {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/events/${eventId}`,
+        `${API_BASE_URL}/events/${eventId}`,
         {
           method: "DELETE",
           headers: getAuthHeaders(),
@@ -198,7 +199,7 @@ const OrganizerDashboardPage = () => {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/registrations/event/${evt.id}`,
+        `${API_BASE_URL}/registrations/event/${evt.id}`,
         { headers: getAuthHeaders() }
       );
 

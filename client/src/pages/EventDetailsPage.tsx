@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { API_BASE_URL } from "../config/api";
+
+const FALLBACK_IMAGE = "/event-placeholder.svg";
 
 interface Event {
   id: number;
@@ -34,7 +37,7 @@ const EventDetailsPage = () => {
   const fetchEvent = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/events/${eventId}`
+        `${API_BASE_URL}/events/${eventId}`
       );
 
       if (!response.ok) {
@@ -63,7 +66,7 @@ const EventDetailsPage = () => {
     try {
       setIsCheckingReg(true);
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/registrations/check/${eventId}`,
+        `${API_BASE_URL}/registrations/check/${eventId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -112,7 +115,7 @@ const EventDetailsPage = () => {
       setRegSuccess("");
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/registrations`,
+        `${API_BASE_URL}/registrations`,
         {
           method: "POST",
           headers: {
@@ -161,7 +164,7 @@ const EventDetailsPage = () => {
       setRegSuccess("");
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/registrations/${registrationId}`,
+        `${API_BASE_URL}/registrations/${registrationId}`,
         {
           method: "DELETE",
           headers: {
@@ -242,10 +245,13 @@ const EventDetailsPage = () => {
         <div className="relative min-h-[360px] md:min-h-[460px] overflow-hidden rounded-3xl border border-[#39443D] shadow-2xl">
           <img
             src={
-              event.image_url ??
-              "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80"
+              event.image_url || FALLBACK_IMAGE
             }
             alt={event.title}
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = FALLBACK_IMAGE;
+            }}
             className="absolute inset-0 h-full w-full object-cover"
           />
 

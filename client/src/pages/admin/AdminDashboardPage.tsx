@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { API_BASE_URL } from "../../config/api";
 
 interface DashboardEvent {
   id: number;
@@ -60,7 +61,7 @@ const AdminDashboardPage = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/admin/users/${targetUserId}/role`,
+        `${API_BASE_URL}/admin/users/${targetUserId}/role`,
         {
           method: "PATCH",
           headers: {
@@ -111,13 +112,13 @@ const AdminDashboardPage = () => {
       try {
         const [usersResponse, statsResponse, upcomingResponse] =
           await Promise.all([
-            fetch(`${import.meta.env.VITE_API_URL}/admin/users`, {
+            fetch(`${API_BASE_URL}/admin/users`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            fetch(`${import.meta.env.VITE_API_URL}/admin/stats`, {
+            fetch(`${API_BASE_URL}/admin/stats`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            fetch(`${import.meta.env.VITE_API_URL}/admin/upcoming-events`, {
+            fetch(`${API_BASE_URL}/admin/upcoming-events`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
           ]);

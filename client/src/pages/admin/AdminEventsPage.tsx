@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../config/api";
 
 interface AdminEvent {
   id: number;
@@ -46,7 +47,7 @@ const getAuthHeaders = ()=>{
   const fetchEvents = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/events`
+        `${API_BASE_URL}/events`
       );
 
       if (!response.ok) {
@@ -85,7 +86,7 @@ const handleCreateEvent = async (event: React.FormEvent<HTMLFormElement>) => {
     };
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/events`,
+      `${API_BASE_URL}/events`,
       {
         method: "POST",
         headers: getAuthHeaders(),
@@ -101,7 +102,7 @@ const handleCreateEvent = async (event: React.FormEvent<HTMLFormElement>) => {
 
     // Refresh the event list from the database.
     const eventsResponse = await fetch(
-      `${import.meta.env.VITE_API_URL}/events`
+      `${API_BASE_URL}/events`
     );
 
     if (!eventsResponse.ok) {
@@ -164,7 +165,7 @@ const handleUpdateEvent = async (event: React.FormEvent<HTMLFormElement>) => {
     };
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/events/${editingEventId}`,
+      `${API_BASE_URL}/events/${editingEventId}`,
       {
         method: "PATCH",
         headers: getAuthHeaders(),
@@ -179,7 +180,7 @@ const handleUpdateEvent = async (event: React.FormEvent<HTMLFormElement>) => {
     }
 
     const eventsResponse = await fetch(
-      `${import.meta.env.VITE_API_URL}/events`
+      `${API_BASE_URL}/events`
     );
 
     if (!eventsResponse.ok) {
@@ -220,7 +221,7 @@ const handleDeleteEvent = async (eventId: number) => {
     setFormError("");
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/events/${eventId}`,
+      `${API_BASE_URL}/events/${eventId}`,
       {
         method: "DELETE",
         headers: getAuthHeaders(),

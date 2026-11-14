@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { API_BASE_URL } from "../../config/api";
 
 interface UserRegistration {
   registration_id: number;
@@ -35,7 +36,7 @@ const AttendeeDashboardPage = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/registrations/me`,
+        `${API_BASE_URL}/registrations/me`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -78,7 +79,7 @@ const AttendeeDashboardPage = () => {
       setCancelSuccess("");
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/registrations/${registrationId}`,
+        `${API_BASE_URL}/registrations/${registrationId}`,
         {
           method: "DELETE",
           headers: {

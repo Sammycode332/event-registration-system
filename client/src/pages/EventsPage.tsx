@@ -1,5 +1,6 @@
 import EventCard from '../components/EventCard';
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from "../config/api";
 
 interface Event {
   id: number;
@@ -45,7 +46,7 @@ const EventsPage = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/events`);
+        const response = await fetch(`${API_BASE_URL}/events`);
         if (!response.ok) {
           throw new Error('Unable to retrieve events.');
         }

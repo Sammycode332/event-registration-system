@@ -11,6 +11,8 @@ interface EventCardProps {
   registrationCount?: number;
 }
 
+const FALLBACK_IMAGE = "/event-placeholder.svg";
+
 const EventCard = ({
   title,
   location,
@@ -33,8 +35,12 @@ const EventCard = ({
         {/* Cover image container */}
         <div className="relative h-52 w-full overflow-hidden bg-[#171B19]">
           <img
-            src={image}
-            alt={title}
+            src={image || FALLBACK_IMAGE}
+            alt={title || "Event"}
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = FALLBACK_IMAGE;
+            }}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
@@ -43,7 +49,7 @@ const EventCard = ({
 
           {/* Badges */}
           <span className="absolute left-4 top-4 rounded-full border border-white/10 bg-[#171B19]/90 px-3 py-1 text-xs font-semibold text-emerald-400 backdrop-blur-sm">
-            {category}
+            {category || "General"}
           </span>
 
           {isFull ? (
@@ -62,15 +68,15 @@ const EventCard = ({
         {/* Content */}
         <div className="p-6">
           <p className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
-            <span>📅</span> {date}
+            <span>📅</span> {date || "Date to be announced"}
           </p>
 
           <h3 className="mt-2 text-xl font-bold text-[#F5F0E6] line-clamp-1 group-hover:text-emerald-300 transition-colors">
-            {title}
+            {title || "Untitled event"}
           </h3>
 
           <p className="mt-2 text-sm text-stone-400 flex items-center gap-1.5 line-clamp-1">
-            <span>📍</span> {location}
+            <span>📍</span> {location || "Location to be announced"}
           </p>
         </div>
       </div>
