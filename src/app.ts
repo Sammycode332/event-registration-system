@@ -14,13 +14,23 @@ const allowedOrigins = (process.env.CLIENT_ORIGIN ?? "")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+// Supports the project's Vercel production and preview deployment URLs.
+const isProjectVercelOrigin = (origin: string) =>
+  /^https:\/\/event-registration-system-[a-z0-9-]+-sammycode332s-projects\.vercel\.app$/i.test(
+    origin
+  );
+
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or Postman)
       if (!origin) return callback(null, true);
       const isLocalDevelopment = /^http:\/\/localhost:[0-9]+$/.test(origin);
-      if (isLocalDevelopment || allowedOrigins.includes(origin)) {
+      if (
+        isLocalDevelopment ||
+        allowedOrigins.includes(origin) ||
+        isProjectVercelOrigin(origin)
+      ) {
         return callback(null, true);
       }
       return callback(new Error("Origin is not allowed by CORS"));
