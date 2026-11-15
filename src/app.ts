@@ -9,31 +9,27 @@ import { authenticate } from "./middleware/authenticate.js";
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_ORIGIN ?? "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = new Set(
+  (process.env.CLIENT_ORIGIN ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
 
-// Supports the project's Vercel production and preview deployment URLs.
-const isProjectVercelOrigin = (origin: string) =>
-  /^https:\/\/event-registration-system-[a-z0-9-]+-sammycode332s-projects\.vercel\.app$/i.test(
-    origin
-  );
+// The Vercel deployment currently used by the production client.
+allowedOrigins.add(
+  "https://event-registration-system-ou5bxznri-sammycode332s-projects.vercel.app"
+);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or Postman)
-      if (!origin) return callback(null, true);
-      const isLocalDevelopment = /^http:\/\/localhost:[0-9]+$/.test(origin);
-      if (
-        isLocalDevelopment ||
-        allowedOrigins.includes(origin) ||
-        isProjectVercelOrigin(origin)
-      ) {
+      // Allows curl/Postman plus local development and the explicitly trusted
+      // deployed frontend origin. Authentication is still enforced by routes.
+      if (!origin || /^http:\/\/localhost:[0-9]+$/.test(origin)) {
         return callback(null, true);
       }
-      return callback(new Error("Origin is not allowed by CORS"));
+      return callback(null, allowedOrigins.has(origin));
     },
     credentials: true,
   })
