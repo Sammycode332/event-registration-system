@@ -16,7 +16,9 @@ const allowedOrigins = new Set(
     .filter(Boolean)
 );
 
-// The Vercel deployment currently used by the production client.
+// Vercel URLs used by this project (the stable production domain and an
+// earlier deployment URL retained for preview access).
+allowedOrigins.add("https://event-registration-system-theta.vercel.app");
 allowedOrigins.add(
   "https://event-registration-system-ou5bxznri-sammycode332s-projects.vercel.app"
 );
